@@ -7,7 +7,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Invoice } from "@/types/invoice";
 import { calculateTotals } from "@/lib/calculations";
 import { formatCurrency } from "@/lib/utils";
@@ -36,62 +35,133 @@ function buildChartData(drafts: Invoice[]) {
   return Object.values(months);
 }
 
-export function RevenueChart({ drafts }: { drafts: Invoice[] }) {
-  const data = buildChartData(drafts);
+function ChartTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: { value: number; dataKey: string }[];
+  label?: string;
+}) {
+  if (!active || !payload?.length) return null;
 
   return (
-    <Card className="shadow-soft">
-      <CardHeader>
-        <CardTitle>Revenue overview</CardTitle>
-        <CardDescription>Paid vs pending amounts over the last 6 months</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[280px] w-full">
+    <div className="rounded-lg border border-border/80 bg-card px-3 py-2.5 shadow-card">
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
+      <div className="space-y-1.5">
+        {payload.map((entry) => (
+          <div key={entry.dataKey} className="flex items-center justify-between gap-6 text-[13px]">
+            <span className="flex items-center gap-2 text-muted-foreground">
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  entry.dataKey === "revenue" ? "bg-foreground" : "bg-muted-foreground"
+                }`}
+              />
+              {entry.dataKey === "revenue" ? "Paid" : "Pending"}
+            </span>
+            <span className="font-medium tabular-nums">{formatCurrency(entry.value)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function RevenueChart({ drafts }: { drafts: Invoice[] }) {
+  const data = buildChartData(drafts);
+  const totalPaid = data.reduce((sum, d) => sum + d.revenue, 0);
+
+  return (
+    <div className="dashboard-panel flex h-full flex-col">
+      <div className="flex flex-col gap-4 border-b border-border/60 px-6 py-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            Analytics
+          </p>
+          <h3 className="text-lg font-semibold tracking-tight">Revenue overview</h3>
+          <p className="text-[13px] text-muted-foreground">
+            Paid vs pending over the last 6 months
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-5 sm:justify-end">
+          <div className="text-right">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              6-mo paid
+            </p>
+            <p className="mt-0.5 text-lg font-semibold tabular-nums tracking-tight">
+              {formatCurrency(totalPaid)}
+            </p>
+          </div>
+          <div className="flex items-center gap-4 text-[12px] text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <span className="h-0.5 w-4 rounded-full bg-foreground" />
+              Paid
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="h-0.5 w-4 rounded-full border border-muted-foreground bg-transparent" />
+              Pending
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 px-4 pb-5 pt-4 sm:px-6">
+        <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <AreaChart data={data} margin={{ top: 12, right: 4, left: -8, bottom: 0 }}>
               <defs>
                 <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#1e293b" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#1e293b" stopOpacity={0} />
+                  <stop offset="0%" stopColor="hsl(222 47% 20%)" stopOpacity={0.12} />
+                  <stop offset="100%" stopColor="hsl(222 47% 20%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="#94a3b8" />
+              <CartesianGrid
+                stroke="hsl(214 20% 92%)"
+                strokeDasharray="0"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="month"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: "hsl(215 16% 47%)" }}
+                dy={8}
+              />
               <YAxis
-                tick={{ fontSize: 12 }}
-                stroke="#94a3b8"
-                tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: "hsl(215 16% 47%)" }}
+                tickFormatter={(v) =>
+                  `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`
+                }
+                width={44}
               />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: 8,
-                  border: "1px solid #e2e8f0",
-                  fontSize: 12,
-                }}
-                formatter={(value: number, name: string) => [
-                  formatCurrency(value),
-                  name === "revenue" ? "Paid" : "Pending",
-                ]}
-              />
+              <Tooltip content={<ChartTooltip />} cursor={{ stroke: "hsl(214 20% 88%)" }} />
               <Area
                 type="monotone"
                 dataKey="revenue"
-                stroke="#1e293b"
+                stroke="hsl(222 47% 20%)"
                 fill="url(#revenueFill)"
                 strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, strokeWidth: 0, fill: "hsl(222 47% 20%)" }}
               />
               <Area
                 type="monotone"
                 dataKey="pending"
-                stroke="#94a3b8"
+                stroke="hsl(215 16% 65%)"
                 fill="transparent"
-                strokeWidth={2}
-                strokeDasharray="4 4"
+                strokeWidth={1.5}
+                strokeDasharray="5 5"
+                dot={false}
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

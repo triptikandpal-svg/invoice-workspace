@@ -26,39 +26,51 @@ export function InvoiceItemsTable({ invoice, onChange }: InvoiceItemsTableProps)
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label className="text-base">Line items</Label>
+        <Label className="text-[13px] font-semibold text-foreground">Items</Label>
         <Button type="button" variant="outline" size="sm" onClick={addRow}>
-          <Plus className="h-4 w-4" />
-          Add item
+          <Plus className="h-3.5 w-3.5" />
+          Add row
         </Button>
       </div>
 
-      <div className="hidden overflow-x-auto rounded-lg border md:block">
-        <table className="w-full text-sm">
+      <div className="hidden overflow-hidden rounded-lg border border-border/70 md:block">
+        <table className="w-full text-[13px]">
           <thead>
-            <tr className="border-b bg-muted/40 text-left text-muted-foreground">
-              <th className="px-4 py-3 font-medium">Description</th>
-              <th className="w-24 px-4 py-3 font-medium">Qty</th>
-              <th className="w-32 px-4 py-3 font-medium">Unit price</th>
-              <th className="w-24 px-4 py-3 font-medium">Tax %</th>
-              <th className="w-32 px-4 py-3 text-right font-medium">Total</th>
-              <th className="w-12 px-4 py-3" />
+            <tr className="border-b border-border/60 bg-muted/30 text-left">
+              <th className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Description
+              </th>
+              <th className="w-20 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Qty
+              </th>
+              <th className="w-28 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Rate
+              </th>
+              <th className="w-20 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Tax
+              </th>
+              <th className="w-28 px-4 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Total
+              </th>
+              <th className="w-12" />
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border/60">
             {invoice.items.map((item) => {
               const total = lineSubtotal(item) + lineTax(item);
               return (
-                <tr key={item.id} className="border-b last:border-0">
-                  <td className="px-4 py-2">
+                <tr key={item.id} className="group bg-card transition-colors hover:bg-muted/20">
+                  <td className="px-3 py-2">
                     <Input
+                      className="h-9 border-transparent bg-transparent shadow-none hover:border-border/80 focus-visible:border-border"
                       value={item.description}
                       onChange={(e) => updateItem(item.id, { description: e.target.value })}
-                      placeholder="Service or product"
+                      placeholder="Description"
                     />
                   </td>
-                  <td className="px-4 py-2">
+                  <td className="px-3 py-2">
                     <Input
+                      className="h-9 border-transparent bg-transparent shadow-none hover:border-border/80 focus-visible:border-border"
                       type="number"
                       min={0}
                       value={item.quantity}
@@ -67,8 +79,9 @@ export function InvoiceItemsTable({ invoice, onChange }: InvoiceItemsTableProps)
                       }
                     />
                   </td>
-                  <td className="px-4 py-2">
+                  <td className="px-3 py-2">
                     <Input
+                      className="h-9 border-transparent bg-transparent shadow-none hover:border-border/80 focus-visible:border-border"
                       type="number"
                       min={0}
                       step="0.01"
@@ -78,8 +91,9 @@ export function InvoiceItemsTable({ invoice, onChange }: InvoiceItemsTableProps)
                       }
                     />
                   </td>
-                  <td className="px-4 py-2">
+                  <td className="px-3 py-2">
                     <Input
+                      className="h-9 border-transparent bg-transparent shadow-none hover:border-border/80 focus-visible:border-border"
                       type="number"
                       min={0}
                       max={100}
@@ -89,14 +103,15 @@ export function InvoiceItemsTable({ invoice, onChange }: InvoiceItemsTableProps)
                       }
                     />
                   </td>
-                  <td className="px-4 py-2 text-right font-medium">
+                  <td className="px-4 py-2 text-right font-medium tabular-nums">
                     {formatCurrency(total, invoice.currency)}
                   </td>
-                  <td className="px-4 py-2">
+                  <td className="px-2 py-2">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8 opacity-0 group-hover:opacity-100"
                       onClick={() => removeRow(item.id)}
                       disabled={invoice.items.length <= 1}
                       aria-label="Remove item"
@@ -115,15 +130,18 @@ export function InvoiceItemsTable({ invoice, onChange }: InvoiceItemsTableProps)
         {invoice.items.map((item) => {
           const total = lineSubtotal(item) + lineTax(item);
           return (
-            <div key={item.id} className="rounded-lg border bg-card p-4 shadow-soft space-y-3">
+            <div
+              key={item.id}
+              className="rounded-lg border border-border/70 bg-muted/10 p-4 space-y-3"
+            >
               <Input
                 value={item.description}
                 onChange={(e) => updateItem(item.id, { description: e.target.value })}
                 placeholder="Description"
               />
               <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <Label className="text-xs text-muted-foreground">Qty</Label>
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase tracking-wider">Qty</Label>
                   <Input
                     type="number"
                     min={0}
@@ -133,8 +151,8 @@ export function InvoiceItemsTable({ invoice, onChange }: InvoiceItemsTableProps)
                     }
                   />
                 </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Price</Label>
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase tracking-wider">Rate</Label>
                   <Input
                     type="number"
                     min={0}
@@ -145,8 +163,8 @@ export function InvoiceItemsTable({ invoice, onChange }: InvoiceItemsTableProps)
                     }
                   />
                 </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Tax %</Label>
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase tracking-wider">Tax %</Label>
                   <Input
                     type="number"
                     min={0}
@@ -158,7 +176,9 @@ export function InvoiceItemsTable({ invoice, onChange }: InvoiceItemsTableProps)
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{formatCurrency(total, invoice.currency)}</span>
+                <span className="text-[13px] font-semibold tabular-nums">
+                  {formatCurrency(total, invoice.currency)}
+                </span>
                 <Button
                   type="button"
                   variant="ghost"

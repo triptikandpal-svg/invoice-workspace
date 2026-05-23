@@ -1,15 +1,19 @@
+import { useState } from "react";
 import { useReactToPrint } from "react-to-print";
-import { Download, Printer, Save } from "lucide-react";
+import { Download, Printer, Save, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { exportInvoicePdf } from "@/lib/pdfExport";
 import { useInvoice } from "@/context/InvoiceContext";
+import { cn } from "@/lib/utils";
 
 interface InvoiceActionsProps {
   printRef: React.RefObject<HTMLDivElement | null>;
+  className?: string;
 }
 
-export function InvoiceActions({ printRef }: InvoiceActionsProps) {
+export function InvoiceActions({ printRef, className }: InvoiceActionsProps) {
   const { invoice, saveDraft, rememberClient } = useInvoice();
+  const [saved, setSaved] = useState(false);
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
@@ -19,21 +23,42 @@ export function InvoiceActions({ printRef }: InvoiceActionsProps) {
   const handleSave = () => {
     saveDraft();
     rememberClient();
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 2000);
   };
 
   return (
-    <div className="no-print flex flex-wrap gap-2">
-      <Button variant="outline" onClick={handleSave}>
-        <Save className="h-4 w-4" />
-        Save draft
+    <div className={cn("no-print toolbar-group", className)}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 rounded-md px-3"
+        onClick={handleSave}
+      >
+        {saved ? (
+          <Check className="h-3.5 w-3.5 text-emerald-600" />
+        ) : (
+          <Save className="h-3.5 w-3.5" />
+        )}
+        {saved ? "Saved" : "Save"}
       </Button>
-      <Button variant="outline" onClick={() => handlePrint?.()}>
-        <Printer className="h-4 w-4" />
-        Print invoice
+      <span className="h-5 w-px bg-border/80" />
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 rounded-md px-3"
+        onClick={() => handlePrint?.()}
+      >
+        <Printer className="h-3.5 w-3.5" />
+        Print
       </Button>
-      <Button variant="secondary" onClick={() => exportInvoicePdf(invoice)}>
-        <Download className="h-4 w-4" />
-        Export PDF
+      <Button
+        size="sm"
+        className="h-8 rounded-md px-3"
+        onClick={() => exportInvoicePdf(invoice)}
+      >
+        <Download className="h-3.5 w-3.5" />
+        PDF
       </Button>
     </div>
   );

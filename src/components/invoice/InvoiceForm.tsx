@@ -1,7 +1,5 @@
-import type { ReactNode } from "react";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,37 +10,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { FormSection } from "@/components/layout/FormSection";
+import { TemplatePicker } from "./TemplatePicker";
 import { InvoiceItemsTable } from "./InvoiceItemsTable";
 import { formatCurrency } from "@/lib/utils";
 import { useInvoice } from "@/context/InvoiceContext";
-import type { BusinessInfo, ClientInfo, InvoiceTemplate, PaymentStatus } from "@/types/invoice";
-
-const templates: { value: InvoiceTemplate; label: string }[] = [
-  { value: "minimal", label: "Minimal" },
-  { value: "corporate", label: "Corporate" },
-  { value: "freelancer", label: "Freelancer" },
-  { value: "tax", label: "Tax Invoice" },
-];
-
-function FieldGroup({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description?: string;
-  children: ReactNode;
-}) {
-  return (
-    <Card className="shadow-soft">
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
-      </CardHeader>
-      <CardContent className="space-y-4">{children}</CardContent>
-    </Card>
-  );
-}
+import type { BusinessInfo, ClientInfo, PaymentStatus } from "@/types/invoice";
 
 export function InvoiceForm() {
   const { invoice, setInvoice, updateInvoice, totals, clients, selectClient, rememberClient } =
@@ -63,34 +36,24 @@ export function InvoiceForm() {
   };
 
   return (
-    <div className="space-y-6">
-      <FieldGroup title="Invoice details" description="Number, dates, status, and template">
+    <div className="space-y-5">
+      <FormSection step={1} title="Invoice details" description="Number, dates, status, and layout.">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="invoiceNumber">Invoice number</Label>
             <Input
               id="invoiceNumber"
+              className="font-mono"
               value={invoice.invoiceNumber}
               onChange={(e) => updateInvoice({ invoiceNumber: e.target.value })}
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 sm:col-span-2">
             <Label>Template</Label>
-            <Select
+            <TemplatePicker
               value={invoice.template}
-              onValueChange={(v) => updateInvoice({ template: v as InvoiceTemplate })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {templates.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>
-                    {t.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={(template) => updateInvoice({ template })}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="invoiceDate">Invoice date</Label>
@@ -128,27 +91,27 @@ export function InvoiceForm() {
             </Select>
           </div>
         </div>
-      </FieldGroup>
+      </FormSection>
 
-      <FieldGroup title="Your business" description="Shown on the invoice header">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-          <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted/30">
+      <FormSection step={2} title="Your business" description="Shown on the invoice header.">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+          <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-border/80 bg-muted/20">
             {invoice.business.logo ? (
               <img
                 src={invoice.business.logo}
                 alt="Company logo"
-                className="h-full w-full object-contain"
+                className="h-full w-full object-contain p-2"
               />
             ) : (
-              <span className="text-xs text-muted-foreground text-center px-2">No logo</span>
+              <span className="px-2 text-center text-[11px] text-muted-foreground">Logo</span>
             )}
           </div>
           <div className="flex-1 space-y-2">
             <Label htmlFor="logo">Company logo</Label>
-            <div className="flex gap-2">
-              <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-card px-3 h-9 text-sm font-medium shadow-soft hover:bg-accent">
+            <div className="flex flex-wrap gap-2">
+              <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border/80 bg-card px-3 text-[13px] font-medium shadow-soft transition-colors hover:bg-muted/50">
                 <Upload className="h-4 w-4" />
-                Upload
+                Upload image
                 <input
                   id="logo"
                   type="file"
@@ -216,9 +179,9 @@ export function InvoiceForm() {
             />
           </div>
         </div>
-      </FieldGroup>
+      </FormSection>
 
-      <FieldGroup title="Client" description="Bill-to information">
+      <FormSection step={3} title="Client" description="Bill-to information.">
         {clients.length > 0 && (
           <div className="space-y-2">
             <Label>Recent clients</Label>
@@ -280,18 +243,29 @@ export function InvoiceForm() {
             />
           </div>
         </div>
-        <Button type="button" variant="secondary" size="sm" onClick={rememberClient}>
+        <Button type="button" variant="outline" size="sm" onClick={rememberClient}>
           Save client for later
         </Button>
-      </FieldGroup>
+      </FormSection>
 
-      <Card className="shadow-soft">
-        <CardContent className="space-y-6 pt-6">
+      <section className="app-panel overflow-hidden">
+        <div className="border-b border-border/60 px-6 py-5">
+          <div className="flex items-start gap-4">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/80 bg-muted/40 text-[13px] font-semibold text-muted-foreground">
+              4
+            </span>
+            <div>
+              <h2 className="text-[15px] font-semibold tracking-tight">Line items & totals</h2>
+              <p className="text-[13px] text-muted-foreground">Products, services, tax, and discounts.</p>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-6 px-6 py-5">
           <InvoiceItemsTable
             invoice={invoice}
             onChange={(items) => setInvoice((prev) => ({ ...prev, items }))}
           />
-          <div className="grid gap-4 border-t pt-6 sm:grid-cols-2">
+          <div className="grid gap-4 border-t border-border/60 pt-6 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Discount (%)</Label>
               <Input
@@ -313,28 +287,38 @@ export function InvoiceForm() {
               />
             </div>
           </div>
-          <div className="ml-auto max-w-xs space-y-2 rounded-lg bg-muted/40 p-4 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span>{formatCurrency(totals.subtotal, invoice.currency)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Tax / GST</span>
-              <span>{formatCurrency(totals.taxTotal, invoice.currency)}</span>
-            </div>
-            {invoice.discountPercent > 0 && (
-              <div className="flex justify-between text-emerald-700">
-                <span>Discount ({invoice.discountPercent}%)</span>
-                <span>-{formatCurrency(totals.discountAmount, invoice.currency)}</span>
+          <div className="rounded-xl border border-border/70 bg-muted/20 p-5">
+            <div className="ml-auto max-w-xs space-y-2.5 text-[13px]">
+              <div className="flex justify-between text-muted-foreground">
+                <span>Subtotal</span>
+                <span className="tabular-nums text-foreground">
+                  {formatCurrency(totals.subtotal, invoice.currency)}
+                </span>
               </div>
-            )}
-            <div className="flex justify-between border-t pt-2 text-base font-semibold">
-              <span>Total</span>
-              <span>{formatCurrency(totals.grandTotal, invoice.currency)}</span>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Tax / GST</span>
+                <span className="tabular-nums text-foreground">
+                  {formatCurrency(totals.taxTotal, invoice.currency)}
+                </span>
+              </div>
+              {invoice.discountPercent > 0 && (
+                <div className="flex justify-between text-emerald-700">
+                  <span>Discount ({invoice.discountPercent}%)</span>
+                  <span className="tabular-nums">
+                    -{formatCurrency(totals.discountAmount, invoice.currency)}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between border-t border-border/60 pt-3 text-base font-semibold">
+                <span>Total</span>
+                <span className="tabular-nums">
+                  {formatCurrency(totals.grandTotal, invoice.currency)}
+                </span>
+              </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }

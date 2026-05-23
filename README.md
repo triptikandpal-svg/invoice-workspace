@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Smart Invoice Workspace
 
 A production-style invoicing SaaS UI for freelancers and small businesses. Built with React, Tailwind CSS, shadcn-style components, react-to-print, jsPDF, and Recharts.
@@ -38,3 +39,7 @@ npm run preview
 - react-to-print
 - jsPDF + jspdf-autotable
 - Recharts
+=======
+# invoice-workspace
+A modern SaaS-style invoice management workspace built with React and Tailwind CSS featuring dynamic invoice generation, live previews, payment tracking, tax calculations, printable layouts, and responsive dashboard UI.
+>>>>>>> ecf4476213a341138189e1230c3daef84772d5d8
